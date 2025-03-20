@@ -1,4 +1,145 @@
+import 'package:flutter/material.dart';
+import '../services/api_service.dart';
+import '../models/post_model.dart';
+import 'profile_screen.dart';
 
+class PostPage extends StatefulWidget {
+  @override
+  _PostPageState createState() => _PostPageState();
+}
+
+class _PostPageState extends State<PostPage> {
+  final ApiService apiService = ApiService();
+  late Future<List<Post>> futurePosts;
+
+  @override
+  void initState() {
+    super.initState();
+    futurePosts = apiService.fetchPosts();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.blueGrey[300], // Light background color for a smooth UI
+      appBar: AppBar(
+        title: Text(
+          "Posts",
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 22,
+            color: Colors.white,
+          ),
+        ),
+        backgroundColor: Colors.blueGrey, // Stylish AppBar color
+        elevation: 6,
+        centerTitle: true,
+        actions: [
+          Padding(
+            padding: EdgeInsets.only(right: 10),
+            child: InkWell(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  PageRouteBuilder(
+                    transitionDuration: Duration(milliseconds: 500),
+                    pageBuilder: (_, __, ___) => ProfileScreen(),
+                    transitionsBuilder: (_, animation, __, child) {
+                      return ScaleTransition(
+                        scale: animation,
+                        child: child,
+                      );
+                    },
+                  ),
+                );
+              },
+              borderRadius: BorderRadius.circular(50), // Makes tap effect rounded
+              splashColor: Colors.white.withOpacity(0.3), // Ripple effect color
+              child: Padding(
+                padding: EdgeInsets.all(6),
+                child: Icon(Icons.account_circle, size: 35, color: Colors.white),
+              ),
+            ),
+          ),
+        ],
+      ),
+      body: FutureBuilder<List<Post>>(
+        future: futurePosts,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          } else {
+            final posts = snapshot.data!;
+            return ListView.builder(
+              physics: BouncingScrollPhysics(), // Smooth scrolling effect
+              itemCount: posts.length,
+              itemBuilder: (context, index) {
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  child: Card(
+                    elevation: 6, // Soft shadow effect
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15), // Rounded edges for a modern look
+                    ),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(15),
+                        gradient: LinearGradient(
+                          colors: [Color(0xFFE8D9FF), Color(0xFFA88BE6)], // Light to deep purple
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                      ),
+                      child: Padding(
+                        padding: EdgeInsets.all(12),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              posts[index].title,
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                                color: Colors.purple[900], // Darker purple for contrast
+                              ),
+                            ),
+                            SizedBox(height: 8),
+                            Text(
+                              posts[index].body,
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.grey[700],
+                              ),
+                            ),
+                            SizedBox(height: 10),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  "Posted on: ${DateTime.now().toLocal().toString().split(' ')[0]}",
+                                  style: TextStyle(color: Colors.grey[500], fontSize: 14),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            );
+          }
+        },
+      ),
+    );
+  }
+}
+
+
+/*
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import '../models/post_model.dart';
@@ -32,7 +173,143 @@ class _PostPageState extends State<PostPage> {
             color: Colors.white,
           ),
         ),
-        backgroundColor: Colors.blue, // Stylish AppBar color
+        backgroundColor: Colors.purple, // Stylish AppBar color
+        elevation: 6,
+        centerTitle: true,
+        actions: [
+          Padding(
+            padding: EdgeInsets.only(right: 10),
+            child: InkWell(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  PageRouteBuilder(
+                    transitionDuration: Duration(milliseconds: 500),
+                    pageBuilder: (_, __, ___) => ProfileScreen(),
+                    transitionsBuilder: (_, animation, __, child) {
+                      return ScaleTransition(
+                        scale: animation,
+                        child: child,
+                      );
+                    },
+                  ),
+                );
+              },
+              borderRadius: BorderRadius.circular(50), // Makes tap effect rounded
+              splashColor: Colors.white.withOpacity(0.3), // Ripple effect color
+              child: Padding(
+                padding: EdgeInsets.all(6),
+                child: Icon(Icons.account_circle, size: 35, color: Colors.white),
+              ),
+            ),
+          ),
+        ],
+      ),
+      body: FutureBuilder<List<Post>>(
+        future: futurePosts,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          } else {
+            final posts = snapshot.data!;
+            return ListView.builder(
+              physics: BouncingScrollPhysics(), // Smooth scrolling effect
+              itemCount: posts.length,
+              itemBuilder: (context, index) {
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  child: Card(
+                    elevation: 6, // Soft shadow effect
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15), // Rounded edges for a modern look
+                    ),
+                    color: Colors.purple[50], // ✅ Light purple background for post cards
+                    child: Padding(
+                      padding: EdgeInsets.all(12),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            posts[index].title,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
+                              color: Colors.purple[900], // ✅ Darker purple for contrast
+                            ),
+                          ),
+                          SizedBox(height: 8),
+                          Text(
+                            posts[index].body,
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.grey[700],
+                            ),
+                          ),
+                          SizedBox(height: 10),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                "Posted on: ${DateTime.now().toLocal().toString().split(' ')[0]}",
+                                style: TextStyle(color: Colors.grey[500], fontSize: 14),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
+            );
+          }
+        },
+      ),
+    );
+  }
+}
+*/
+
+
+
+
+/*
+import 'package:flutter/material.dart';
+import '../services/api_service.dart';
+import '../models/post_model.dart';
+import 'profile_screen.dart';
+
+class PostPage extends StatefulWidget {
+  @override
+  _PostPageState createState() => _PostPageState();
+}
+
+class _PostPageState extends State<PostPage> {
+  final ApiService apiService = ApiService();
+  late Future<List<Post>> futurePosts;
+
+  @override
+  void initState() {
+    super.initState();
+    futurePosts = apiService.fetchPosts();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.grey[200], // Light background color for a smooth UI
+      appBar: AppBar(
+        title: Text(
+          "Posts",
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 22,
+            color: Colors.white,
+          ),
+        ),
+        backgroundColor: Colors.purple, // Stylish AppBar color
         elevation: 6,
         centerTitle: true,
         actions: [
@@ -124,7 +401,7 @@ class _PostPageState extends State<PostPage> {
     );
   }
 }
-
+*/
 
 /*
 import 'package:flutter/material.dart';
